@@ -6,7 +6,7 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 import os
-
+from sys import platform
 class MovieLensModel(tfrs.Model):
     # We derive from a custom base class to help reduce boilerplate. Under the hood,
     # these are still plain Keras Models.
@@ -35,9 +35,12 @@ class MovieLensModel(tfrs.Model):
 
 
 class Factorization(object):
-    __file_path = os.getcwd()+"\\FINGERPRINT_OBJECT.csv"
-    __file_path2 = os.getcwd()+"\\FINGERPRINT.csv"
-
+    if platform=="win32" or platform=="win64":
+        __file_path = os.getcwd()+"\\FINGERPRINT_OBJECT.csv"
+        __file_path2 = os.getcwd()+"\\FINGERPRINT.csv"
+    else:
+        __file_path = os.getcwd() + "/FINGERPRINT_OBJECT.csv"
+        __file_path2 = os.getcwd() + "/FINGERPRINT.csv"
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Factorization, cls).__new__(cls)
