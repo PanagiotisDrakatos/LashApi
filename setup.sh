@@ -21,6 +21,9 @@ apt --purge remove build-essential checkinstall libreadline-gplv2-dev libncurses
 apt autoremove -y
 apt clean
 
+sudo apt-get install pipenv
+pipenv install
+pipenv shell
 python3.7 -m pip install -U pip
 python3.7 -m pip install pandas tensorflow Django djangorestframework requests
 echo '$alias pip3="python3.7 -m pip"' >> ~/.bashrc
