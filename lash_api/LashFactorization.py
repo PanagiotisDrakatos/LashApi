@@ -7,6 +7,7 @@ import tensorflow as tf
 import tensorflow_recommenders as tfrs
 import os
 from sys import platform
+from lash_api.Convertion import Convert
 class MovieLensModel(tfrs.Model):
     # We derive from a custom base class to help reduce boilerplate. Under the hood,
     # these are still plain Keras Models.
@@ -131,7 +132,7 @@ class Factorization(object):
         self.model.fit(self.ratings.batch(1024), epochs=10)
 
 
-    def reccomend(self, oids):
+    def reccomend(self, oids,X,Y,PREV_DECK):
         result_frame = []
         for index, item in enumerate(oids):
             frequency = []
@@ -165,12 +166,25 @@ class Factorization(object):
         result_frame = reduce(lambda left, right: pd.merge(left, right, on=['flid'], how='inner'), updated).fillna('none')
         result_frame = result_frame.loc[:, ~result_frame.columns.duplicated()].copy()
 
+        rating_long2 = self.get_rating_long().merge(final_res.head(5), on='flid', how='inner', indicator=True)
         rating_long = self.get_rating_long().merge(final_res.head(1), on='flid', how='inner', indicator=True)
 
-        res = {
-            "flid": rating_long.head(1)['flid'].iloc[0],
-            "x": rating_long.head(1)['x'].iloc[0],
-            "y": rating_long.head(1)['y'].iloc[0],
-            "deck": rating_long.head(1)['deck'].iloc[0],
-        }
+        if X == "-1" and Y == "-1" and PREV_DECK == "-1":
+            res = {
+                "flid": rating_long.head(1)['flid'].iloc[0],
+                "x": rating_long.head(1)['x'].iloc[0],
+                "y": rating_long.head(1)['y'].iloc[0],
+                "deck": rating_long.head(1)['deck'].iloc[0],
+            }
+        else:
+            convert = Convert()
+            dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
+                                                    rating_long2["x"].values, rating_long2["y"].values, X,Y)
+            min_value = min(dist, key=lambda t: t[4])
+            res = {
+                "flid": min_value[0],
+                "x": min_value[2],
+                "y": min_value[3],
+                "deck": min_value[1],
+            }
         return res

@@ -17,12 +17,15 @@ class NpEncoder(json.JSONEncoder):
 def index(request):
     if request.method == "GET":
         matrix = Factorization()
+        X=request.GET['prevX']
+        Y=request.GET['prevY']
+        PREV_DECK = request.GET['prevDeck']
         oids = request.GET['oids']
         oids = oids.split(",")
         for i in range(len(oids)):
             oids[i] = int(oids[i])
         print(oids)
-        res = matrix.reccomend(oids)
+        res = matrix.reccomend(oids,X,Y,PREV_DECK)
         json_res=json.dumps(res, sort_keys=True, separators=(',', ': '), ensure_ascii=False,cls=NpEncoder)
         json_res=json.loads(json_res)
         return JsonResponse(json_res, safe=False)

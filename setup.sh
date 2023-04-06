@@ -12,5 +12,5 @@ pip3 install virtualenv
 virtualenv --version
 virtualenv venv
 source venv/bin/activate
-python3 -m pip install pandas pyproj tensorflow tensorflow_recommenders Django djangorestframework requests
+python3 -m pip install pandas pyproj tensorflow tensorflow_recommenders Django djangorestframework requests geopy
 

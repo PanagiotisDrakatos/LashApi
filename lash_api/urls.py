@@ -21,7 +21,10 @@ urlpatterns = [
     path('factorization/', factorization_view.index, name='index'),
     path('admin/', admin.site.urls),
 ]
-#http://127.0.0.1:8080/factorization/?oids=2,44,47
+#python manage.py runserver 127.0.0.1:8080
+#http://172.104.245.69/factorization/?prevX=-1&prevY=-1&prevDeck=-1&oids=2,44,47
+#http://127.0.0.1:8080/factorization/?prevX=-1&prevY=-1&prevDeck=-1&oids=2,44,47
+#http://127.0.0.1:8080/factorization/?prevX=3&oids=2,44,47
 #http://127.0.0.1:8080/factorization/?oids=2,44,47
 #http://10.16.30.155:8000/polls/?oids=2,44,47
 #http://10.16.30.155:8000/factorization/?oids=2,44,47
