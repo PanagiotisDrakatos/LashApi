@@ -161,49 +161,31 @@ class Factorization(object):
             result_frame[i] = result_frame[i]['flid'].astype(np.int64)
             rating_long_res = self.get_rating_long().merge(result_frame[i], on='flid', how='left', indicator=True)
             final_res = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
-            final_res = final_res[(final_res['x'].lt(float(X) + float(smas_db_location_bound_meters))) &(final_res['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
-            final_res = final_res[(final_res['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
+            if X != "SMAS_NULL" or Y != "SMAS_NULL" or PREV_DECK != "SMAS_NULL":
+                final_res = final_res[(final_res['x'].lt(float(X) + float(smas_db_location_bound_meters))) &(final_res['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
+                final_res = final_res[(final_res['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
+                final_res = final_res[rating_long_res['deck'].isin([PREV_DECK])]
             final_res = final_res.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
 
 
-            final_res2 = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
-            final_res2 = final_res2[(final_res2['x'].lt(float(X) + float(smas_db_location_bound_meters))) & (final_res2['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
-            final_res2 = final_res2[(final_res2['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res2['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
-            final_res2 = final_res2.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
+            #final_res2 = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
+            #final_res2 = final_res2[(final_res2['x'].lt(float(X) + float(smas_db_location_bound_meters))) & (final_res2['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
+            #final_res2 = final_res2[(final_res2['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res2['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
+            #final_res2 = final_res2.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
             updated.append(final_res)
         result_frame = reduce(lambda left, right: pd.merge(left, right, on=['flid'], how='inner'), updated).fillna('none')
         result_frame = result_frame.loc[:, ~result_frame.columns.duplicated()].copy()
 
-        rating_long2 = self.get_rating_long().merge(final_res2.head(5), on='flid', how='inner', indicator=True)
+        #rating_long2 = self.get_rating_long().merge(final_res2.head(5), on='flid', how='inner', indicator=True)
         rating_long = self.get_rating_long().merge(final_res.head(1), on='flid', how='inner', indicator=True)
-
-        if X == "SMAS_NULL" or Y == "SMAS_NULL" or PREV_DECK == "SMAS_NULL":
-            res = {
-                "flid": rating_long.head(1)['flid'].iloc[0],
-                "x": rating_long.head(1)['x'].iloc[0],
-                "y": rating_long.head(1)['y'].iloc[0],
-                "deck": rating_long.head(1)['deck'].iloc[0],
-            }
-        else:
-            try:
+        try:
                 res = {
-                    "flid": rating_long2.head(1)['flid'].iloc[0],
-                    "x": rating_long2.head(1)['x'].iloc[0],
-                    "y": rating_long2.head(1)['y'].iloc[0],
-                    "deck": rating_long2.head(1)['deck'].iloc[0],
+                    "flid": rating_long.head(1)['flid'].iloc[0],
+                    "x": rating_long.head(1)['x'].iloc[0],
+                    "y": rating_long.head(1)['y'].iloc[0],
+                    "deck": rating_long.head(1)['deck'].iloc[0],
                 }
-                """
-                convert = Convert()
-                 dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
-                                                         rating_long2["x"].values, rating_long2["y"].values, X,Y)
-                 min_value = min(dist,default=dist[0], key=lambda t: t[4])
-                 res = {
-                     "flid": min_value[0],
-                     "x": min_value[2],
-                     "y": min_value[3],
-                     "deck": min_value[1],
-                 }"""
-            except:
+        except:
                 res = {
                     "SMAS_NULL": "SMAS_NULL",
                 }
