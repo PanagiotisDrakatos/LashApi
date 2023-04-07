@@ -186,6 +186,7 @@ class Factorization(object):
                     "deck": rating_long.head(1)['deck'].iloc[0],
                 }
         except:
+                traceback.print_exc()
                 res = {
                     "SMAS_NULL": "SMAS_NULL",
                 }
