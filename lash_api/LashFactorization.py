@@ -183,7 +183,7 @@ class Factorization(object):
                 convert = Convert()
                 dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
                                                         rating_long2["x"].values, rating_long2["y"].values, X,Y)
-                min_value = min(dist, key=lambda t: t[4])
+                min_value = min(dist,default=dist[0], key=lambda t: t[4])
                 res = {
                     "flid": min_value[0],
                     "x": min_value[2],
