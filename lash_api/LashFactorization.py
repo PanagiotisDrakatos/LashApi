@@ -41,8 +41,8 @@ class Factorization(object):
         __file_path = os.getcwd()+"\\FINGERPRINT_OBJECT.csv"
         __file_path2 = os.getcwd()+"\\FINGERPRINT.csv"
     else:
-        __file_path = os.getcwd() + "/FINGERPRINT_OBJECT.csv"
-        __file_path2 = os.getcwd() + "/FINGERPRINT.csv"
+        __file_path = "/root/LashApi/FINGERPRINT_OBJECT.csv"
+        __file_path2 = "/root/LashApi/FINGERPRINT.csv"
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Factorization, cls).__new__(cls)
