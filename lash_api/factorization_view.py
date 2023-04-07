@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from lash_api.LashFactorization import Factorization
 import json
 import numpy as np
-
+from collections import OrderedDict
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -26,6 +26,6 @@ def index(request):
             oids[i] = int(oids[i])
         print(oids)
         res = matrix.reccomend(oids,X,Y,PREV_DECK)
-        json_res=json.dumps(res, sort_keys=True, separators=(',', ': '), ensure_ascii=False,cls=NpEncoder)
-        json_res=json.loads(json_res)
+        json_res=json.dumps(res, separators=(',', ': '), ensure_ascii=False, cls=NpEncoder)
+        json_res=json.loads(json_res,object_pairs_hook=OrderedDict)
         return JsonResponse(json_res, safe=False)

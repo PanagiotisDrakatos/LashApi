@@ -8,6 +8,7 @@ import tensorflow_recommenders as tfrs
 import os
 from sys import platform
 from lash_api.Convertion import Convert
+import traceback
 class MovieLensModel(tfrs.Model):
     # We derive from a custom base class to help reduce boilerplate. Under the hood,
     # these are still plain Keras Models.
@@ -190,6 +191,8 @@ class Factorization(object):
                     "deck": min_value[1],
                 }
             except:
+                print("here")
+                traceback.print_exc()
                 res = {
                     "flid": rating_long.head(1)['flid'].iloc[0],
                     "x": rating_long.head(1)['x'].iloc[0],
