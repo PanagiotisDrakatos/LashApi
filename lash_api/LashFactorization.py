@@ -170,7 +170,7 @@ class Factorization(object):
         rating_long2 = self.get_rating_long().merge(final_res2.head(5), on='flid', how='inner', indicator=True)
         rating_long = self.get_rating_long().merge(final_res.head(1), on='flid', how='inner', indicator=True)
 
-        if X == "-1" and Y == "-1" and PREV_DECK == "-1":
+        if X == "SMAS_NULL" or Y == "SMAS_NULL" or PREV_DECK == "SMAS_NULL":
             res = {
                 "flid": rating_long.head(1)['flid'].iloc[0],
                 "x": rating_long.head(1)['x'].iloc[0],
@@ -178,14 +178,22 @@ class Factorization(object):
                 "deck": rating_long.head(1)['deck'].iloc[0],
             }
         else:
-            convert = Convert()
-            dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
-                                                    rating_long2["x"].values, rating_long2["y"].values, X,Y)
-            min_value = min(dist, key=lambda t: t[4])
-            res = {
-                "flid": min_value[0],
-                "x": min_value[2],
-                "y": min_value[3],
-                "deck": min_value[1],
-            }
+            try:
+                convert = Convert()
+                dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
+                                                        rating_long2["x"].values, rating_long2["y"].values, X,Y)
+                min_value = min(dist, key=lambda t: t[4])
+                res = {
+                    "flid": min_value[0],
+                    "x": min_value[2],
+                    "y": min_value[3],
+                    "deck": min_value[1],
+                }
+            except:
+                res = {
+                    "flid": rating_long.head(1)['flid'].iloc[0],
+                    "x": rating_long.head(1)['x'].iloc[0],
+                    "y": rating_long.head(1)['y'].iloc[0],
+                    "deck": rating_long.head(1)['deck'].iloc[0],
+                }
         return res
