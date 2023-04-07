@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from lash_api.LashFactorization import Factorization
 import json
 import numpy as np
@@ -17,6 +17,9 @@ class NpEncoder(json.JSONEncoder):
 def index(request):
     if request.method == "GET":
         matrix = Factorization()
+        buid = request.GET['buid']
+        modelid = int(request.GET['modelid'])
+        smas_db_location_bound_meters=request.GET['smas_db_location_bound_meters'];
         X=request.GET['prevX']
         Y=request.GET['prevY']
         PREV_DECK = request.GET['prevDeck']
@@ -25,7 +28,9 @@ def index(request):
         for i in range(len(oids)):
             oids[i] = int(oids[i])
         print(oids)
-        res = matrix.reccomend(oids,X,Y,PREV_DECK)
-        json_res=json.dumps(res, separators=(',', ': '), ensure_ascii=False, cls=NpEncoder)
-        json_res=json.loads(json_res,object_pairs_hook=OrderedDict)
-        return JsonResponse(json_res, safe=False)
+        res = matrix.reccomend(oids,buid,modelid,X,Y,PREV_DECK,smas_db_location_bound_meters)
+        json_res=json.dumps(res, separators=(',', ':'), ensure_ascii=False, cls=NpEncoder)
+        print(json_res)
+       # json_res=json.loads(json_res)
+       # print(json_res)
+        return HttpResponse(json_res);

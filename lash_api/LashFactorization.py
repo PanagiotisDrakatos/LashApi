@@ -87,7 +87,7 @@ class Factorization(object):
 
     def ratings2(self,file_path):
         ratings2 = pd.read_csv(file_path, index_col=None, encoding='latin-1')
-        ratings2 = ratings2[["flid", 'time', "oid", "x", "y", "deck"]]
+        ratings2 = ratings2[["flid", 'time','buid', "oid", "x", "y",'modelid', "deck"]]
         ratings2.drop(ratings2.loc[ratings2['time'] == 1658826977].index, inplace=True)
         return ratings2
 
@@ -133,7 +133,7 @@ class Factorization(object):
         self.model.fit(self.ratings.batch(1024), epochs=10)
 
 
-    def reccomend(self, oids,X,Y,PREV_DECK):
+    def reccomend(self, oids,buid,modelid,X,Y,PREV_DECK,smas_db_location_bound_meters):
         result_frame = []
         for index, item in enumerate(oids):
             frequency = []
@@ -160,9 +160,15 @@ class Factorization(object):
             result_frame[i] = result_frame[i].rename(columns={"Recommendation": "flid"})
             result_frame[i] = result_frame[i]['flid'].astype(np.int64)
             rating_long_res = self.get_rating_long().merge(result_frame[i], on='flid', how='left', indicator=True)
-            final_res = rating_long_res[rating_long_res['oid'].isin(oids)]
+            final_res = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
+            final_res = final_res[(final_res['x'].lt(float(X) + float(smas_db_location_bound_meters))) &(final_res['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
+            final_res = final_res[(final_res['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
             final_res = final_res.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
-            final_res2 = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['deck'].isin([PREV_DECK])]
+
+
+            final_res2 = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
+            final_res2 = final_res2[(final_res2['x'].lt(float(X) + float(smas_db_location_bound_meters))) & (final_res2['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
+            final_res2 = final_res2[(final_res2['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res2['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
             final_res2 = final_res2.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
             updated.append(final_res)
         result_frame = reduce(lambda left, right: pd.merge(left, right, on=['flid'], how='inner'), updated).fillna('none')
@@ -180,23 +186,25 @@ class Factorization(object):
             }
         else:
             try:
-                convert = Convert()
-                dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
-                                                        rating_long2["x"].values, rating_long2["y"].values, X,Y)
-                min_value = min(dist,default=dist[0], key=lambda t: t[4])
                 res = {
-                    "flid": min_value[0],
-                    "x": min_value[2],
-                    "y": min_value[3],
-                    "deck": min_value[1],
+                    "flid": rating_long2.head(1)['flid'].iloc[0],
+                    "x": rating_long2.head(1)['x'].iloc[0],
+                    "y": rating_long2.head(1)['y'].iloc[0],
+                    "deck": rating_long2.head(1)['deck'].iloc[0],
                 }
+                """
+                convert = Convert()
+                 dist = convert.get_lat_long_to_meters3(rating_long2["flid"].values, rating_long2["deck"].values,
+                                                         rating_long2["x"].values, rating_long2["y"].values, X,Y)
+                 min_value = min(dist,default=dist[0], key=lambda t: t[4])
+                 res = {
+                     "flid": min_value[0],
+                     "x": min_value[2],
+                     "y": min_value[3],
+                     "deck": min_value[1],
+                 }"""
             except:
-                print("here")
-                traceback.print_exc()
                 res = {
-                    "flid": rating_long.head(1)['flid'].iloc[0],
-                    "x": rating_long.head(1)['x'].iloc[0],
-                    "y": rating_long.head(1)['y'].iloc[0],
-                    "deck": rating_long.head(1)['deck'].iloc[0],
+                    "SMAS_NULL": "SMAS_NULL",
                 }
         return res
