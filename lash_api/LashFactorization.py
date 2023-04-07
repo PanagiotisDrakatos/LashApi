@@ -160,13 +160,14 @@ class Factorization(object):
             result_frame[i] = result_frame[i]['flid'].astype(np.int64)
             rating_long_res = self.get_rating_long().merge(result_frame[i], on='flid', how='left', indicator=True)
             final_res = rating_long_res[rating_long_res['oid'].isin(oids)]
-            final_res = final_res.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values(
-                'Frequency', ascending=False)
+            final_res = final_res.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
+            final_res2 = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['deck'].isin([PREV_DECK])]
+            final_res2 = final_res2.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
             updated.append(final_res)
         result_frame = reduce(lambda left, right: pd.merge(left, right, on=['flid'], how='inner'), updated).fillna('none')
         result_frame = result_frame.loc[:, ~result_frame.columns.duplicated()].copy()
 
-        rating_long2 = self.get_rating_long().merge(final_res.head(5), on='flid', how='inner', indicator=True)
+        rating_long2 = self.get_rating_long().merge(final_res2.head(5), on='flid', how='inner', indicator=True)
         rating_long = self.get_rating_long().merge(final_res.head(1), on='flid', how='inner', indicator=True)
 
         if X == "-1" and Y == "-1" and PREV_DECK == "-1":
