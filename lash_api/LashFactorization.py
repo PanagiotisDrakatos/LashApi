@@ -162,8 +162,8 @@ class Factorization(object):
             rating_long_res = self.get_rating_long().merge(result_frame[i], on='flid', how='left', indicator=True)
             final_res = rating_long_res[rating_long_res['oid'].isin(oids) & rating_long_res['modelid'].isin([modelid]) & rating_long_res['buid'].isin([buid])]
             if X != "SMAS_NULL" or Y != "SMAS_NULL" or PREV_DECK != "SMAS_NULL":
-                final_res = final_res[(final_res['x'].lt(float(X) + float(smas_db_location_bound_meters))) &(final_res['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
-                final_res = final_res[(final_res['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
+                #final_res = final_res[(final_res['x'].lt(float(X) + float(smas_db_location_bound_meters))) &(final_res['x'].ge(abs(float(X) - float(smas_db_location_bound_meters))))]
+                #final_res = final_res[(final_res['y'].lt(float(Y) + float(smas_db_location_bound_meters))) & (final_res['y'].ge(abs(float(Y) - float(smas_db_location_bound_meters))))]
                 final_res = final_res[rating_long_res['deck'].eq(int(PREV_DECK))]
             final_res = final_res.groupby(['flid'])['oid'].nunique().to_frame('Frequency').reset_index().sort_values('Frequency', ascending=False)
 
